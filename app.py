@@ -212,7 +212,6 @@ with col2:
     st.metric(label="FY2029/30 Horizon Yield", value=f"EC$ {total_y3:,.0f}")
 with col3:
     st.metric(label="Horizon Integrated CAGR", value=f"{grand_total_cagr*100:.2f}%")
-
 st.subheader("📊 Structured Projections Evaluation Matrix")
 formatted_df = final_df.copy()
 for col in ["Baseline 2026/27", "Projected 2027/28", "Projected 2028/29", "Projected 2029/30"]:
