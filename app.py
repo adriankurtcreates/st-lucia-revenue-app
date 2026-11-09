@@ -133,8 +133,7 @@ if uploaded_file is not None:
         st.error(f"Error parsing structural layout: {e}")
         st.stop()
 else:
-    # Safe backup framework when no file is uploaded yet
-    st.info("💡 Please upload your historical outturn file using the sidebar panel to see your live custom data. Displaying fallback metrics below:")
+    st.info("💡 Upload your baseline file via the sidebar. Displaying baseline reference layout below:")
     tax_heads_data = [
         {"Code": "3111 001", "Tax Head": "Personal Income Tax", "Type": "Current", "Baseline": 142506159, "Driver": "Wage bill", "Buoyancy": 1.0},
         {"Code": "3111 002", "Tax Head": "Arrears on Personal Income Tax", "Type": "Arrears", "Baseline": 29652094, "Driver": "Flat", "Buoyancy": 0.0},
@@ -173,7 +172,7 @@ for th in tax_heads_data:
         y2 = calculate_net_vat_bridge(raw_y2, vat_refund_claim_rate, vat_audit_efficiency)["net_vat"]
         y3 = calculate_net_vat_bridge(raw_y3, vat_refund_claim_rate, vat_audit_efficiency)["net_vat"]
         
-    else: # Arrears Accounting Framework
+    else:
         cfg = arrears_config.get(th["Code"], {"opening": b_val*5, "base_col": 0.20, "write_off": 0.02, "accrual": 0.20})
         res1 = run_arrears_stock_flow(cfg["opening"], cfg["base_col"], cfg["write_off"], cfg["accrual"], current_tax_collections=b_val)
         y1 = res1["collections"]
@@ -199,7 +198,7 @@ grand_total_cagr = np.power((total_y3 / total_b), 1/3) - 1.0 if total_b > 0 else
 output_rows.append({
     "Code": "", "Tax Head": "GRAND TOTAL REVENUE", "Baseline 2026/27": total_b,
     "Projected 2027/28": total_y1, "Projected 2028/29": total_y2, "Projected 2029/30": total_y3,
-    "Avg Annual Growth": grand_total_total_cagr if 'grand_total_total_cagr' in locals() else grand_total_cagr
+    "Avg Annual Growth": grand_total_cagr
 })
 
 final_df = pd.DataFrame(output_rows)
@@ -212,23 +211,38 @@ with col2:
     st.metric(label="FY2029/30 Horizon Yield", value=f"EC$ {total_y3:,.0f}")
 with col3:
     st.metric(label="Horizon Integrated CAGR", value=f"{grand_total_cagr*100:.2f}%")
+
 st.subheader("📊 Structured Projections Evaluation Matrix")
 formatted_df = final_df.copy()
+# 6. Display Analytics Display Layout
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric(label=f"Projected Total Yield ({selected_scenario}) FY27/28", value=f"EC$ {total_y1:,.0f}")
+with col2:
+    st.metric(label="FY2029/30 Horizon Yield", value=f"EC$ {total_y3:,.0f}")
+with col3:
+    st.metric(label="Horizon Integrated CAGR", value=f"{grand_total_cagr*100:.2f}%")
+
+st.subheader("📊 Structured Projections Evaluation Matrix")
+formatted_df = final_df.copy()
+
 for col in ["Baseline 2026/27", "Projected 2027/28", "Projected 2028/29", "Projected 2029/30"]:
     formatted_df[col] = formatted_df[col].map(lambda x: f"EC$ {x:,.0f}")
 formatted_df["Avg Annual Growth"] = formatted_df["Avg Annual Growth"].map(lambda x: f"{x*100:.2f}%")
+
 st.dataframe(formatted_df, use_container_width=True)
 
 # 7. Document Downloads Section
-
 st.subheader("📥 Export Institutional Analysis Documents")
 btn_col1, btn_col2 = st.columns(2)
+
 with btn_col1:
     excel_path = generate_excel_report(final_df, selected_scenario)
     with open(excel_path, "rb") as f:
         st.download_button(
             label="Download Excel Worksheet Summary Report",
-            data=f, file_name=f"IRD_Projections_Sheet_{selected_scenario}.xlsx",
+            data=f, 
+            file_name=f"IRD_Projections_Sheet_{selected_scenario}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
@@ -238,6 +252,7 @@ with btn_col2:
     with open(docx_path, "rb") as f:
         st.download_button(
             label="Download Executive Briefing Memorandum (.docx)",
-            data=f, file_name=f"IRD_Methodological_Brief_{selected_scenario}.docx",
+            data=f, 
+            file_name=f"IRD_Methodological_Brief_{selected_scenario}.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
