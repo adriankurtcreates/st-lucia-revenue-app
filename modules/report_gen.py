@@ -28,8 +28,8 @@ def generate_excel_report(summary_df, scenario_name):
     ws = wb.active
     ws.title = "Revenue Projections Summary"
 
-    # FIX: ws.views.sheetView is None on freshly created worksheets in openpyxl,
-    # so direct attribute access raises AttributeError. Guard it.
+    # FIX: ws.views.sheetView is None on freshly created worksheets in openpyxl
+    # 3.1.x, so direct attribute access raises AttributeError. Guard it.
     try:
         ws.views.sheetView.showGridLines = False
     except AttributeError:
@@ -107,15 +107,17 @@ def generate_excel_report(summary_df, scenario_name):
 
         current_row += 1
 
-    # Dynamic column widths (measure from header row onward)
-    for col in ws.columns:
+    # FIX: on unsaved sheets in openpyxl 3.1.x, iterating ws.columns yields tuples
+    # of cells whose .column attribute may be None; derive the index from the loop
+    # counter instead of the cell tuple.
+    for col_idx, col_cells in enumerate(ws.columns, start=1):
         max_len = 0
-        col_letter = get_column_letter(col.column)
-        for cell in col:
+        for cell in col_cells:
             if cell.row < header_row:
                 continue
             if cell.value is not None:
                 max_len = max(max_len, len(str(cell.value)))
+        col_letter = get_column_letter(col_idx)
         ws.column_dimensions[col_letter].width = max(max_len + 4, 13)
 
     # Return in-memory buffer instead of writing to disk
