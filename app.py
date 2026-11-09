@@ -215,7 +215,7 @@ with col3:
 st.subheader("📊 Structured Projections Evaluation Matrix")
 formatted_df = final_df.copy()
 for col in ["Baseline 2026/27", "Projected 2027/28", "Projected 2028/29", "Projected 2029/30"]:
-formatted_df[col] = formatted_df[col].map(lambda x: f"EC$ {x:,.0f}")
+    formatted_df[col] = formatted_df[col].map(lambda x: f"EC$ {x:,.0f}")
 formatted_df["Avg Annual Growth"] = formatted_df["Avg Annual Growth"].map(lambda x: f"{x*100:.2f}%")
 st.dataframe(formatted_df, use_container_width=True)
 
