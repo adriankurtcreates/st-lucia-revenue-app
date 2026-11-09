@@ -224,19 +224,20 @@ st.dataframe(formatted_df, use_container_width=True)
 st.subheader("📥 Export Institutional Analysis Documents")
 btn_col1, btn_col2 = st.columns(2)
 with btn_col1:
-excel_path = generate_excel_report(final_df, selected_scenario)
-with open(excel_path, "rb") as f:
-st.download_button(
-label="Download Excel Worksheet Summary Report",
-data=f, file_name=f"IRD_Projections_Sheet_{selected_scenario}.xlsx",
-mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
+    excel_path = generate_excel_report(final_df, selected_scenario)
+    with open(excel_path, "rb") as f:
+        st.download_button(
+            label="Download Excel Worksheet Summary Report",
+            data=f, file_name=f"IRD_Projections_Sheet_{selected_scenario}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
 with btn_col2:
-summary_stats = {"baseline_total": total_b, "year3_total": total_y3}
-docx_path = generate_docx_brief(summary_stats, selected_scenario)
-with open(docx_path, "rb") as f:
-st.download_button(
-label="Download Executive Briefing Memorandum (.docx)",
-data=f, file_name=f"IRD_Methodological_Brief_{selected_scenario}.docx",
-mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-)
+    summary_stats = {"baseline_total": total_b, "year3_total": total_y3}
+    docx_path = generate_docx_brief(summary_stats, selected_scenario)
+    with open(docx_path, "rb") as f:
+        st.download_button(
+            label="Download Executive Briefing Memorandum (.docx)",
+            data=f, file_name=f"IRD_Methodological_Brief_{selected_scenario}.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
