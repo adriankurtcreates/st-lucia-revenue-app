@@ -28,7 +28,12 @@ def generate_excel_report(summary_df, scenario_name):
     ws = wb.active
     ws.title = "Revenue Projections Summary"
     # FIX: hide gridlines on a styled report (previous code set the default True, a no-op)
-    ws.views.sheetView.showGridLines = False
+    # FIX: openpyxl sets ws.views.sheetView to None on freshly created sheets;
+    # guard the cosmetic gridline toggle so it can't throw AttributeError.
+    try:
+        ws.views.sheetView.showGridLines = False
+    except AttributeError:
+        pass
 
     # Palette Styles (Classic Navy Theme)
     navy_fill = PatternFill(start_color="1B365D", end_color="1B365D", fill_type="solid")
