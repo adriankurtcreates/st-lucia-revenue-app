@@ -27,9 +27,9 @@ def generate_excel_report(summary_df, scenario_name):
     wb = Workbook()
     ws = wb.active
     ws.title = "Revenue Projections Summary"
-    # FIX: hide gridlines on a styled report (previous code set the default True, a no-op)
-    # FIX: openpyxl sets ws.views.sheetView to None on freshly created sheets;
-    # guard the cosmetic gridline toggle so it can't throw AttributeError.
+
+    # FIX: ws.views.sheetView is None on freshly created worksheets in openpyxl,
+    # so direct attribute access raises AttributeError. Guard it.
     try:
         ws.views.sheetView.showGridLines = False
     except AttributeError:
@@ -52,7 +52,7 @@ def generate_excel_report(summary_df, scenario_name):
         bottom=Side(border_style="double", color="000000"),
     )
 
-    # FIX: EC$ currency format (previous code used "$", which reads as US dollars)
+    # EC$ currency format (matches the title block; avoids the US-$ ambiguity)
     ECY_FORMAT = '"EC$"#,##0;"(EC$"#,##0")";"-"'
     PCT_FORMAT = "0.00%"
 
@@ -118,7 +118,7 @@ def generate_excel_report(summary_df, scenario_name):
                 max_len = max(max_len, len(str(cell.value)))
         ws.column_dimensions[col_letter].width = max(max_len + 4, 13)
 
-    # FIX: return in-memory buffer instead of writing to disk
+    # Return in-memory buffer instead of writing to disk
     buffer = io.BytesIO()
     wb.save(buffer)
     buffer.seek(0)
@@ -151,7 +151,7 @@ def generate_docx_brief(summary_stats, scenario_name):
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     doc.add_paragraph("-" * 60)
 
-    # FIX: safe number formatting so missing/None values can't crash the docx build
+    # Safe number formatting so missing/None values can't crash the docx build
     baseline_total = _safe_float(summary_stats.get('baseline_total', 0))
     year3_total = _safe_float(summary_stats.get('year3_total', 0))
 
@@ -175,7 +175,7 @@ def generate_docx_brief(summary_stats, scenario_name):
         bp.add_run(pref).bold = True
         bp.add_run(text)
 
-    # FIX: return in-memory buffer instead of writing to disk
+    # Return in-memory buffer instead of writing to disk
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
