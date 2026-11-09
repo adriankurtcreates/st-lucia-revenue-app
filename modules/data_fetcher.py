@@ -1,16 +1,39 @@
 import requests
-import pandas as pd
+import streamlit as st
 
+WB_URL = (
+    "https://api.worldbank.org/v2/country/LCA/indicator/FP.CPI.TOTL.ZG"
+    "?format=json&per_page=100"
+)
+
+# Documented IMF WEO / MPO April 2026 baseline CPI inflation for Saint Lucia
+IMF_WEO_FALLBACK = {
+    "2026": 0.021,
+    "2027": 0.020,
+    "2028": 0.020,
+    "2029": 0.020,
+    "2030": 0.020,
+}
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
 def fetch_macro_forecasts():
-    # World Bank API endpoint for Saint Lucia (LCA) CPI Inflation
-    wb_url = "http://worldbank.org"
-    # IMF WEO API or static scrape for Real GDP Growth
-    # (Simulated fallbacks map directly to IMF WEO cycles)
+    """
+    Fetch Saint Lucia CPI inflation from the World Bank API.
+    Falls back to the IMF WEO baseline if the API is unavailable or malformed.
+    """
     try:
-        response = requests.get(wb_url).json()
-        # Parse JSON into a clean dictionary mapping Year -> Value
-        data_points = {item['date']: float(item['value'])/100 for item in response[1] if item['value'] is not None}
-        return data_points
+        response = requests.get(WB_URL, timeout=10)
+        response.raise_for_status()
+        payload = response.json()
+        # World Bank v2 format: [metadata, [{"date": "2023", "value": 2.1, ...}, ...]]
+        if not isinstance(payload, list) or len(payload) < 2 or not payload[1]:
+            return dict(IMF_WEO_FALLBACK)
+        data_points = {
+            item["date"]: float(item["value"]) / 100.0
+            for item in payload[1]
+            if item.get("value") is not None
+        }
+        return data_points if data_points else dict(IMF_WEO_FALLBACK)
     except Exception:
-        # Fallback to the April 2026 WEO/MPO baselines from your original model
-        return {"2026": 0.021, "2027": 0.020, "2028": 0.020, "2029": 0.020, "2030": 0.020}
+        return dict(IMF_WEO_FALLBACK)
