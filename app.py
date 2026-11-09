@@ -219,7 +219,7 @@ for col in ["Baseline 2026/27", "Projected 2027/28", "Projected 2028/29", "Proje
 formatted_df["Avg Annual Growth"] = formatted_df["Avg Annual Growth"].map(lambda x: f"{x*100:.2f}%")
 st.dataframe(formatted_df, use_container_width=True)
 
-7. Document Downloads Section
+# 7. Document Downloads Section
 
 st.subheader("📥 Export Institutional Analysis Documents")
 btn_col1, btn_col2 = st.columns(2)
