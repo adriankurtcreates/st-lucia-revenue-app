@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from modules.data_fetcher import fetch_macro_forecasts
-from modules.compliance_refunds import calculate_net_vat
+from modules.compliance_refunds import calculate_net_vat_bridge
 
 st.set_page_config(page_title="LCA Inland Revenue Projections", layout="wide")
 st.title("🇱🇨 IRD Revenue Projection Model (Streamlit Version)")
